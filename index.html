@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Pawan Kumar Major Assignment - 4</title>
+
+    <script src="https://d3js.org/d3.v6.min.js"></script>
+
+    <style>
+        #updatedTime {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            font-family: sans-serif;
+            font-size: 12pt;
+        }
+
+        .legendText {
+            font-family: sans-serif;
+            font-size: 5pt;
+        }
+    </style>
+
+</head>
+
+
+<body>
+    <h1>Pawan Kumar Major Assignment - 4 </h1>
+    <svg width="80vw" viewbox="0 0 800 600"></svg>
+
+    <div id='updatedTime'>
+    </div>
+
+
+    <script>
+
+        const updatedTimeSeries = 'Data_CT.csv'
+        let updatedSvg = d3.select("svg");
+
+
+        const updatedPath = d3.geoPath();
+
+        function plotUpdatedContour(fileName) {
+
+
+            d3.csv(fileName).then(function (data) {
+                let m = 512, n = 512;
+
+                let values = [];
+                data.forEach(function (d) {
+                    values.push(+d[0])
+                });
+
+
+                const minTemperature = d3.min(values);
+                const maxTemperature = d3.max(values);
+
+
+
+                let updatedColors = d3.scaleLinear()
+                    .domain(d3.range(minTemperature, maxTemperature,
+                        parseInt(Math.abs(maxTemperature - minTemperature) / 7)))
+                    .range(["#0d1a50", "#3e5eba", "#2b83ba",
+                        "#abdda4", "#ffffbf", "#fdae61", "#d7191c"])
+                    .interpolate(d3.interpolateHcl);
+
+
+
+
+                let updatedContours = d3.contours()
+                    .size([m, n])
+                    .thresholds(d3.range(minTemperature, maxTemperature, 100)) 
+                    (values);
+
+                updatedSvg.append("g").attr("class", "contours")
+                    .selectAll("path")
+                    .data(updatedContours)
+                    .enter()
+                    .append("path")
+                    .attr("d", function (d) { return updatedPath(d) })
+                    .attr("stroke", "black")
+                    .attr("stroke-width", ".1px")
+                    .attr("stroke-linejoin", "round")
+                    .attr("fill",
+                        function (d) {
+                            return updatedColors(d.value)
+                        })
+            })
+        }
+
+
+        plotUpdatedContour(updatedTimeSeries)
+
+    </script>
+</body>
+
+</html>
